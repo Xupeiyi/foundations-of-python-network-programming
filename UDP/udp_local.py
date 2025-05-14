@@ -31,7 +31,7 @@ def client(port):
     sock.sendto(data, ("127.0.0.1", port))
     print(f"The OS assigned me the address {sock.getsockname()}")
 
-    data, address = sock.recvfrom(MAX_BYTES)  # danger
+    data, address = sock.recvfrom(MAX_BYTES)  # danger - the code did not check if data comes from the server
     text = data.decode("ascii")
     print(f"The server {address} replied: {text}")
 
