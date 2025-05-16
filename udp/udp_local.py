@@ -14,13 +14,13 @@ def server(port):
     print(f"Listening at {sock.getsockname()}")
 
     while True:
-        data, address = sock.recvfrom(MAX_BYTES)
-        text = data.decode('ascii')
-        print(f"The client at {address} says {text}")
+        client_data, client_address = sock.recvfrom(MAX_BYTES)
+        client_text = client_data.decode('ascii')
+        print(f"The client at {client_address} says {client_text}")
 
-        text = f"Your data was {len(data)} bytes long"
-        data = text.encode('ascii')
-        sock.sendto(data, address)
+        server_text = f"Your data was {len(client_data)} bytes long"
+        server_data = server_text.encode('ascii')
+        sock.sendto(server_data, client_address)
 
 
 def client(port):
