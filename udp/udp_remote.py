@@ -1,24 +1,23 @@
-import argparse, random, socket, sys
+import argparse, random, socket
 
 MAX_BYTES = 65535
 
 
-def server(interface, port):
+def server(hostname, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((interface, port))
+    sock.bind((hostname, port))
     print(f"Listening at {sock.getsockname()}")
 
     while True:
-        data, address = sock.recvfrom(MAX_BYTES)
+        client_data, client_address = sock.recvfrom(MAX_BYTES)
 
         if random.random() < 0.5:
-            print(f"Pretending to drop packet from {address}")
+            print(f"Pretending to drop packet from {client_address}")
             continue
 
-        text = data.decode("ascii")
-        print(f"The client at {address} says {text}")
-        message = f"Your data was {len(data)} bytes long"
-        sock.sendto(message.encode("ascii"), address)
+        print(f"The client at {client_address} says {client_data.decode("ascii")}")
+        server_text = f"Your data was {len(client_data)} bytes long"
+        sock.sendto(server_text.encode("ascii"), client_address)
 
 
 def client(hostname, port):
@@ -26,17 +25,16 @@ def client(hostname, port):
     sock.connect((hostname, port))
     print(f"Client socket name is {sock.getsockname()}")
 
-    text = "This is another message"
-    data = text.encode("ascii")
+    client_data = "This is another message".encode("ascii")
 
     delay = 0.1
     while True:
-        sock.send(data)
+        sock.send(client_data)
         print(f"Waiting up to {delay} seconds for a reply")
         sock.settimeout(delay)
 
         try:
-            data = sock.recv(MAX_BYTES)
+            server_data = sock.recv(MAX_BYTES)
         except socket.timeout:
             delay *= 2
             if delay > 2.0:
@@ -44,7 +42,7 @@ def client(hostname, port):
         else:
             break
 
-    print(f"The server says: {data.decode('ascii')}")
+    print(f"The server says: {server_data.decode('ascii')}")
 
 
 if __name__ == "__main__":
