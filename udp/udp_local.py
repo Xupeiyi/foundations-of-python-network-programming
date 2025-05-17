@@ -27,7 +27,7 @@ def client(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     client_text = f"The time is {datetime.now()}"
-    client_data = text.encode('ascii')
+    client_data = client_text.encode('ascii')
     sock.sendto(client_data, ("127.0.0.1", port))
     print(f"The OS assigned me the address {sock.getsockname()}")
 
