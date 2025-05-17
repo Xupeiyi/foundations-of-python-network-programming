@@ -23,6 +23,8 @@ def server(port):
         sock.sendto(server_data, client_address)
 
 
+# the client is a promiscuous listener
+# it will accept any datagram from any address
 def client(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
