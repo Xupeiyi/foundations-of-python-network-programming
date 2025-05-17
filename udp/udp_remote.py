@@ -3,9 +3,9 @@ import argparse, random, socket
 MAX_BYTES = 65535
 
 
-def server(hostname, port):
+def server(interface, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((hostname, port))
+    sock.bind((interface, port))
     print(f"Listening at {sock.getsockname()}")
 
     while True:
@@ -15,19 +15,19 @@ def server(hostname, port):
             print(f"Pretending to drop packet from {client_address}")
             continue
 
-        print(f"The client at {client_address} says {client_data.decode("ascii")}")
+        print(f"The client at {client_address} says {client_data.decode('ascii')}")
         server_text = f"Your data was {len(client_data)} bytes long"
         sock.sendto(server_text.encode("ascii"), client_address)
 
 
 def client(hostname, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.connect((hostname, port))
+    sock.connect((hostname, port))  # connect to the remote address
     print(f"Client socket name is {sock.getsockname()}")
 
     client_data = "This is another message".encode("ascii")
 
-    delay = 0.1
+    delay = 0.1  # 0.1 seconds might be too short for a response to come back
     while True:
         sock.send(client_data)
         print(f"Waiting up to {delay} seconds for a reply")
@@ -36,6 +36,7 @@ def client(hostname, port):
         try:
             server_data = sock.recv(MAX_BYTES)
         except socket.timeout:
+            # exponential backoff
             delay *= 2
             if delay > 2.0:
                 raise RuntimeError("I think the server is down")
