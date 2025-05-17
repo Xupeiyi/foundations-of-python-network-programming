@@ -26,14 +26,14 @@ def server(port):
 def client(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    text = f"The time is {datetime.now()}"
-    data = text.encode('ascii')
-    sock.sendto(data, ("127.0.0.1", port))
+    client_text = f"The time is {datetime.now()}"
+    client_data = text.encode('ascii')
+    sock.sendto(client_data, ("127.0.0.1", port))
     print(f"The OS assigned me the address {sock.getsockname()}")
 
-    data, address = sock.recvfrom(MAX_BYTES)  # danger - the code did not check if data comes from the server
-    text = data.decode("ascii")
-    print(f"The server {address} replied: {text}")
+    suspicious_data, suspicious_address = sock.recvfrom(MAX_BYTES)  # danger - the code did not check if data comes from the server
+    suspicious_text = suspicious_data.decode("ascii")
+    print(f"The server {suspicious_address} replied: {suspicious_text}")
 
 
 if __name__ == "__main__":
