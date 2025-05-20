@@ -45,19 +45,27 @@ def client(host, port, bytecount):
         sent += len(message)
         print(f"\r {sent} bytes sent", end=" ")
         sys.stdout.flush()
-
     print()
-    client_socket.shutdown(socket.SHUT_WR)
+
+    # We need to close the socket to tell the server that we are done sending data,
+    # but if we do that we are not able to receive the data sent by the server using recv().
+    # The solution is to use shutdown() to "half-close" the sending side of the socket (the client),
+    # without destroying the socket itself.
+    client_socket.shutdown(socket.SHUT_WR)  # SHUT_WR means writing is done from the caller
 
     print("Receiving all the data the server sends back")
 
     received = 0
     while True:
         data = client_socket.recv(42)
+
         if not received:
             print(f"  The first data received says {repr(data)}")
+
+        # the socket will return an empty string when it's closed
         if not data:
             break
+
         received += len(data)
         print(f"\r   {received} bytes received", end=" ")
 
