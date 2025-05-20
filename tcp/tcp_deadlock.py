@@ -13,10 +13,13 @@ def server(host, port, bytecount):
         print(f"Processing up to 1024 bytes at a time from {client_socket_name}")
         n = 0
         while True:
-            data = connected_socket.recv(1024)
+            data = connected_socket.recv(1024)  # will return 16 bytes if that's all there is
             if not data:
                 break
             output = data.decode("ascii").upper().encode("ascii")
+            # 2. the server can block here when the client's buffer is full
+            # and it will not receive the data sent by the client
+            # so gradually the client will stop sending data, creating a deadlock
             connected_socket.sendall(output)
             n += len(data)
             print(f"\r{n} bytes so far", end=" ")
@@ -27,28 +30,30 @@ def server(host, port, bytecount):
 
 
 def client(host, port, bytecount):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     bytecount = (bytecount + 15) // 16 * 16  # round up to a multiple of 16
     message = b"capitalize this!"
 
     print(f"Sending {bytecount} bytes of data, in chunks of 16 bytes")
-    sock.connect((host, port))
+    client_socket.connect((host, port))
 
     sent = 0
     while sent < bytecount:
-        sock.sendall(message)
+        # 1. the client sends the data but never receives it in this while loop
+        # the client's TCP buffer can be full at some point, and the server will stop sending
+        client_socket.sendall(message)
         sent += len(message)
         print(f"\r {sent} bytes sent", end=" ")
         sys.stdout.flush()
 
     print()
-    sock.shutdown(socket.SHUT_WR)
+    client_socket.shutdown(socket.SHUT_WR)
 
     print("Receiving all the data the server sends back")
 
     received = 0
     while True:
-        data = sock.recv(42)
+        data = client_socket.recv(42)
         if not received:
             print(f"  The first data received says {repr(data)}")
         if not data:
@@ -57,7 +62,7 @@ def client(host, port, bytecount):
         print(f"\r   {received} bytes received", end=" ")
 
     print()
-    sock.close()
+    client_socket.close()
 
 
 if __name__ == "__main__":
